@@ -1,19 +1,19 @@
 import UserServices from '../services/user';
-import { User } from '../utils/interfaces';
+import { ContextType, SigninInput, User } from '../utils/interfaces';
 
-const queries = {};
+const queries = {
+  signin: (
+    parent: any,
+    { payload }: { payload: SigninInput },
+    ctx: ContextType
+  ) => {
+    return UserServices.signin(payload, ctx);
+  },
+};
 
 const mutations = {
-  createUser: async (
-    parent: any,
-    { payload }: { payload: User },
-    context: any
-  ) => {
-    try {
-      return await UserServices.createUser(payload);
-    } catch (error: any) {
-      return error.message;
-    }
+  createUser: async (_parent: any, { payload }: { payload: User }) => {
+    return await UserServices.createUser(payload);
   },
 };
 

@@ -1,6 +1,8 @@
 import { db } from '../../clients';
 import bcrypt from 'bcrypt';
-import { User } from '../utils/interfaces';
+import { SigninInput, User } from '../utils/interfaces';
+import { GraphQLError } from 'graphql';
+import JWTServices from './jwt';
 
 export default class UserServices {
   static async createUser(data: User) {
@@ -14,7 +16,12 @@ export default class UserServices {
       });
 
       if (user) {
-        throw new Error('User already exists');
+        throw new GraphQLError('User already exists', {
+          extensions: {
+            code: 'BAD_USER_INPUT',
+            http: { status: 400 },
+          },
+        });
       }
 
       const hashedPassword = await bcrypt.hash(password, 10);
@@ -29,7 +36,44 @@ export default class UserServices {
 
       return 'Signed up successfully';
     } catch (error: any) {
-      return error.message;
+      return error;
+    }
+  }
+
+  static async signin(payload: SigninInput, ctx: any) {
+    const { email, password } = payload;
+    try {
+      const user = await db.user.findFirst({
+        where: {
+          email,
+        },
+      });
+
+      if (!user) {
+        throw new GraphQLError('Invalid credentials', {
+          extensions: {
+            code: 'BAD_USER_INPUT',
+            http: { status: 400 },
+          },
+        });
+      }
+
+      const isMatch = await bcrypt.compare(password, user.password);
+
+      if (!isMatch) {
+        throw new GraphQLError('Invalid credentials', {
+          extensions: {
+            code: 'BAD_USER_INPUT',
+            http: { status: 400 },
+          },
+        });
+      }
+
+      const signinToken = JWTServices.generateSigninToken(user.id, user.email);
+
+      return signinToken;
+    } catch (error) {
+      return error;
     }
   }
 }

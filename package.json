@@ -11,6 +11,7 @@
   "devDependencies": {
     "@types/bcrypt": "^5.0.2",
     "@types/cors": "^2.8.17",
+    "@types/jsonwebtoken": "^9.0.5",
     "prisma": "^5.9.1",
     "tsc-watch": "^6.0.4",
     "typescript": "^5.3.3"

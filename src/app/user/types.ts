@@ -6,6 +6,11 @@ input CreateUserInput {
     password: String!
 }
 
+input SigninInput {
+    email: String!
+    password: String!
+}
+
 type User {
     id: ID!
     name: String!
